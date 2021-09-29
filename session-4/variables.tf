@@ -2,7 +2,7 @@
 
 variable "instance_type" {
   type        = string
-  default     = "t3.micro"
+  default     = "t2.micro"
   description = "This is an instance type for EC2"
 }
 
