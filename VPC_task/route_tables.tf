@@ -5,55 +5,40 @@ resource "aws_route_table" "custom" {
   }
 }
 
-resource "aws_route_table" "custom_1" {
+resource "aws_route_table" "custom_1" { 
   vpc_id = aws_vpc.main.id
+  
   tags = {
     Name = "${var.env}-${var.app}-private-table-1"
   }
 }
 
 
-///// Public Subnet Associations/////
+# ///// Public Subnet Associations/////
 
-resource "aws_route_table_association" "pub_sub_1" {
-  subnet_id      = aws_subnet.pub_sub_1.id
+resource "aws_route_table_association" "custom" {
+  count          = 3
+  subnet_id      = element(aws_subnet.pub.*.id, count.index)
   route_table_id = aws_route_table.custom.id
+
 }
 
-resource "aws_route_table_association" "pub_sub_2" {
-  subnet_id      = aws_subnet.pub_sub_2.id
-  route_table_id = aws_route_table.custom.id
-}
-
-resource "aws_route_table_association" "pub_sub_3" {
-  subnet_id      = aws_subnet.pub_sub_3.id
-  route_table_id = aws_route_table.custom.id
-}
-
-///// Private Subnet Associations/////
-resource "aws_route_table_association" "pri_sub_1" {
-  subnet_id      = aws_subnet.pri_sub_1.id
+# Associate Private Subnet with Private Route Table
+resource "aws_route_table_association" "private_subnet_assoc" {
+  count          = length(var.pri_subnet)
   route_table_id = aws_route_table.custom_1.id
-}
-
-resource "aws_route_table_association" "pri_sub_2" {
-  subnet_id      = aws_subnet.pri_sub_2.id
-  route_table_id = aws_route_table.custom_1.id
-}
-
-resource "aws_route_table_association" "pri_sub_3" {
-  subnet_id      = aws_subnet.pri_sub_3.id
-  route_table_id = aws_route_table.custom_1.id
+  subnet_id      = element(aws_subnet.pri.*.id, count.index)
 }
 
 resource "aws_route" "igw" {
-  route_table_id            = aws_route_table.custom.id
-  destination_cidr_block    = "0.0.0.0/0"
-  gateway_id                = aws_internet_gateway.main.id
+  route_table_id         = aws_route_table.custom.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.main.id
 }
 
 resource "aws_route" "nat" {
-  route_table_id            = aws_route_table.custom_1.id
-  destination_cidr_block    = "0.0.0.0/0"
-  nat_gateway_id            = aws_nat_gateway.example.id
+  count                  = 1
+  route_table_id         = aws_route_table.custom_1.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = element(aws_nat_gateway.example.*.id, count.index)
 }
