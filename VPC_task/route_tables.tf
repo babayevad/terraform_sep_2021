@@ -36,9 +36,9 @@ resource "aws_route" "igw" {
   gateway_id             = aws_internet_gateway.main.id
 }
 
-resource "aws_route" "nat" {
-  count                  = 1
-  route_table_id         = aws_route_table.custom_1.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = element(aws_nat_gateway.example.*.id, count.index)
-}
+# resource "aws_route" "nat" {
+#   count                  = 1
+#   route_table_id         = aws_route_table.custom_1.id
+#   destination_cidr_block = "0.0.0.0/0"
+#   nat_gateway_id         = element(aws_nat_gateway.example.*.id, count.index)
+# }
